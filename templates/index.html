@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cumulation Tool</title>
     <style>
-        /* Global styles */
+        /* Dark Mode Colors */
         :root {
             --bg-color: #121212;
             --text-color: #ffffff;
             --box-bg: #1e1e1e;
             --box-border: #333;
             --highlight-color: #ff5252;
-            --button-bg: #333;
-            --button-hover: #444;
+            --button-bg: #007BFF;
+            --button-hover: #0056b3;
         }
 
         body {
@@ -30,25 +29,36 @@
             margin-bottom: 20px;
         }
 
-        input, button {
-            padding: 12px;
-            margin: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
+        .input-container {
+            width: 80%;
+            margin: 0 auto;
         }
 
         input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
             background: var(--box-bg);
             color: var(--text-color);
             border: 1px solid var(--box-border);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
             width: 80%;
-            max-width: 300px;
+            margin: 20px auto;
         }
 
         button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
             background: var(--button-bg);
-            color: var(--text-color);
+            color: white;
             cursor: pointer;
             transition: 0.3s;
         }
@@ -88,50 +98,39 @@
             background: var(--highlight-color);
         }
 
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-        }
-
-        .popup button {
-            background: var(--highlight-color);
+        .selected {
+            background: var(--highlight-color) !important;
+            color: white;
         }
     </style>
 </head>
 <body>
 
     <h2>Cumulation Tool</h2>
-    <input type="text" id="inputValues" placeholder="Enter numbers (e.g., 10 20 30 or 5*3)">
-    <button onclick="cumulate('left')">Cumulate From Left</button>
-    <button onclick="cumulate('right')">Cumulate From Right</button>
+
+    <div class="input-container">
+        <input type="text" id="inputValues" placeholder="Enter numbers (e.g., 10 20 30 or 5*3)">
+    </div>
+
+    <div class="button-container">
+        <button onclick="cumulate('left')">Cumulate From Left</button>
+        <button onclick="cumulate('right')">Cumulate From Right</button>
+    </div>
 
     <div class="result-container">
         <div>
             <h3>Left Cumulation</h3>
-            <div id="leftResult" class="result-box"></div>
+            <div id="leftResult" class="result-box" tabindex="0"></div>
         </div>
         <div>
             <h3>Right Cumulation</h3>
-            <div id="rightResult" class="result-box"></div>
+            <div id="rightResult" class="result-box" tabindex="0"></div>
         </div>
     </div>
 
-    <button onclick="showPopup()">Generate Measurements From Image</button>
-
-    <div id="popup" class="popup">
-        <p>Generate Measurements From Image</p>
-        <button onclick="closePopup()">Close</button>
-    </div>
-
     <script>
+        let selectedIndex = -1;
+
         function cumulate(direction) {
             const inputValues = document.getElementById("inputValues").value.trim();
             if (!inputValues) {
@@ -144,15 +143,18 @@
                 .then(data => {
                     const resultBox = direction === 'left' ? document.getElementById("leftResult") : document.getElementById("rightResult");
                     resultBox.innerHTML = "";
+                    selectedIndex = -1; // Reset selection
 
                     data.result.forEach((item, index) => {
                         const div = document.createElement("div");
                         div.classList.add("result-item");
                         div.textContent = item;
                         div.dataset.index = index;
-                        div.onclick = () => div.classList.toggle("highlighted");
+                        div.onclick = () => toggleSelection(div);
                         resultBox.appendChild(div);
                     });
+
+                    enableKeyboardNavigation(resultBox);
                 })
                 .catch(error => {
                     console.error("Error:", error);
@@ -160,14 +162,28 @@
                 });
         }
 
-        function showPopup() {
-            document.getElementById("popup").style.display = "block";
+        function toggleSelection(element) {
+            element.classList.toggle("selected");
         }
 
-        function closePopup() {
-            document.getElementById("popup").style.display = "none";
+        function enableKeyboardNavigation(container) {
+            container.setAttribute("tabindex", "0");
+            container.focus();
+
+            container.addEventListener("keydown", function(event) {
+                const items = this.querySelectorAll(".result-item");
+                if (items.length === 0) return;
+
+                if (event.key === "ArrowDown") {
+                    selectedIndex = selectedIndex < items.length - 1 ? selectedIndex + 1 : selectedIndex;
+                    items[selectedIndex].classList.add("selected");
+                    items[selectedIndex].scrollIntoView({ behavior: "smooth", block: "nearest" });
+                } 
+                event.preventDefault();
+            });
         }
     </script>
 
 </body>
-</html>
+</html>     
+                
