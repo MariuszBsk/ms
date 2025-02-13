@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cumulate Numbers</title>
+    <style>
+        /* Dark Mode Styling */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #121212;
+            color: white;
+        }
+
+        h2, h3 {
+            color: #f0f0f0;
+        }
+
+        input {
+            padding: 15px;
+            margin: 10px;
+            font-size: 20px;
+            width: 80%;
+            background: #1e1e1e;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        button {
+            padding: 15px 20px;
+            margin: 10px;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        .result-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .result-box {
+            border: 2px solid #444;
+            padding: 20px;
+            width: 200px; /* Wider */
+            height: 400px; /* Taller */
+            overflow-y: auto;
+            text-align: left;
+            background: #1e1e1e;
+            border-radius: 8px;
+        }
+
+        .result-item {
+            font-weight: bold;
+            font-size: 26px; /* Bigger text */
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .result-item:hover {
+            background: #333;
+        }
+
+        .highlighted {
+            color: red;
+        }
+
+        .selected {
+            background-color: gray;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #222;
+            color: white;
+            padding: 20px;
+            border: 1px solid #444;
+            z-index: 1000;
+            border-radius: 8px;
+        }
+
+        .popup button {
+            margin-top: 10px;
+            background: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Cumulate Numbers</h2>
+    <p>Enter Measurements With Space Between Them:</p>
+    <input type="text" id="inputValues" placeholder="e.g. 5 10 15*2">
+    <br>
+    <button onclick="cumulate('left')">Cumulate From Left</button>
+    <button onclick="cumulate('right')">Cumulate From Right</button>
+
+    <div class="result-container">
+        <div>
+            <h3>Left Cumulation</h3>
+            <div id="leftResult" class="result-box" tabindex="0"></div>
+        </div>
+        <div>
+            <h3>Right Cumulation</h3>
+            <div id="rightResult" class="result-box" tabindex="0"></div>
+        </div>
+    </div>
+
+    <button onclick="showPopup()">Generate Measurements From Image</button>
+
+    <div id="popup" class="popup">
+        <p>Generate Measurements From Image</p>
+        <button onclick="closePopup()">Close</button>
+    </div>
+
+    <script>
+        function cumulate(direction) {
+            const inputValues = document.getElementById("inputValues").value;
+            fetch(`/cumulate?direction=${direction}&values=${inputValues}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultBox = direction === 'left' ? document.getElementById("leftResult") : document.getElementById("rightResult");
+                    resultBox.innerHTML = ""; // Clear previous results
+                    
+                    data.result.forEach((item, index) => {
+                        const div = document.createElement("div");
+                        div.classList.add("result-item");
+                        div.textContent = item;
+                        div.dataset.index = index;
+                        div.onclick = () => toggleSelection(div);
+                        resultBox.appendChild(div);
+                    });
+
+                    // Enable keyboard navigation
+                    enableKeyboardNavigation(resultBox);
+                });
+        }
+
+        function toggleSelection(element) {
+            element.classList.toggle("highlighted");
+        }
+
+        function enableKeyboardNavigation(container) {
+            let selectedIndex = -1;
+            container.addEventListener("keydown", function(event) {
+                const items = this.querySelectorAll(".result-item");
+                if (items.length === 0) return;
+
+                if (event.key === "ArrowDown") {
+                    selectedIndex = selectedIndex < items.length - 1 ? selectedIndex + 1 : 0;
+                } else if (event.key === "ArrowUp") {
+                    selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : items.length - 1;
+                } else {
+                    return; // Ignore other keys
+                }
+
+                // Remove previous selection highlight
+                items.forEach(item => item.classList.remove("selected"));
+
+                // Mark current selection
+                if (items[selectedIndex]) {
+                    items[selectedIndex].classList.add("selected");
+                    items[selectedIndex].classList.add("highlighted"); // Turn red
+                }
+
+                // Ensure the selected item is visible
+                items[selectedIndex].scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+                event.preventDefault();
+            });
+        }
+
+        function showPopup() {
+            document.getElementById("popup").style.display = "block";
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
