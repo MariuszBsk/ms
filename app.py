@@ -51,4 +51,5 @@ def generate_image():
     return jsonify({"message": "Feature not implemented yet"})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Render ustawia PORT automatycznie
+    app.run(host='0.0.0.0', port=port, debug=True)
