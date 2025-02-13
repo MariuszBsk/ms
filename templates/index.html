@@ -1,16 +1,38 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cumulation</title>
+    <title>Cumulation Tool</title>
     <style>
-        .result-box {
-            border: 1px solid #000;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input, button {
             padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .result-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .result-box {
+            border: 2px solid #333;
+            padding: 10px;
+            min-width: 200px;
             min-height: 50px;
+            background: #f9f9f9;
         }
         .result-item {
+            padding: 5px;
+            margin: 2px 0;
+            background: #ddd;
             cursor: pointer;
         }
         .highlighted {
@@ -32,7 +54,8 @@
 </head>
 <body>
 
-    <input type="text" id="inputValues" placeholder="Enter comma-separated numbers">
+    <h2>Cumulation Tool</h2>
+    <input type="text" id="inputValues" placeholder="Enter numbers (e.g., 10 20 30 or 5*3)">
     <button onclick="cumulate('left')">Cumulate From Left</button>
     <button onclick="cumulate('right')">Cumulate From Right</button>
 
@@ -62,7 +85,7 @@
                 return;
             }
 
-            fetch(`http://localhost:5000/cumulate?direction=${direction}&values=${encodeURIComponent(inputValues)}`)
+            fetch(`/cumulate?direction=${direction}&values=${encodeURIComponent(inputValues)}`)
                 .then(response => response.json())
                 .then(data => {
                     const resultBox = direction === 'left' ? document.getElementById("leftResult") : document.getElementById("rightResult");
@@ -76,42 +99,15 @@
                         div.onclick = () => toggleSelection(div);
                         resultBox.appendChild(div);
                     });
-
-                    // Enable keyboard navigation
-                    enableKeyboardNavigation(resultBox);
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    alert("Failed to fetch results. Make sure the backend is running on port 5000.");
+                    alert("Failed to fetch results. Make sure the backend is running.");
                 });
         }
 
         function toggleSelection(element) {
             element.classList.toggle("highlighted");
-        }
-
-        function enableKeyboardNavigation(container) {
-            let selectedIndex = -1;
-            container.addEventListener("keydown", function(event) {
-                const items = this.querySelectorAll(".result-item");
-                if (items.length === 0) return;
-
-                if (event.key === "ArrowDown") {
-                    selectedIndex = selectedIndex < items.length - 1 ? selectedIndex + 1 : 0;
-                } else if (event.key === "ArrowUp") {
-                    selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : items.length - 1;
-                } else {
-                    return; // Ignore other keys
-                }
-
-                items.forEach(item => item.classList.remove("selected", "highlighted"));
-                if (items[selectedIndex]) {
-                    items[selectedIndex].classList.add("selected", "highlighted");
-                    items[selectedIndex].scrollIntoView({ behavior: "smooth", block: "nearest" });
-                }
-
-                event.preventDefault();
-            });
         }
 
         function showPopup() {
@@ -125,10 +121,4 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
+        
